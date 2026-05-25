@@ -1,0 +1,5 @@
+telethon
+requests
+beautifulsoup4
+telebot
+psycopg2-binary
