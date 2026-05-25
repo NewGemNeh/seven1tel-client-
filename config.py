@@ -12,7 +12,7 @@ OWNER_ID = 7958281142
 OWNER_USERNAME = "@BashOnChqin"
 OTP_LOG_GROUP_ID = -1003243421314
 OTHER_CHANNELS = ["@sdjkingjoiya", "@bavkupsdj", "@SDJNUMB"]
-OTP_GROUP_LINK = "https://t.me/zainjoiya21"
+OTP_GROUP_LINK = "https://t.me/NG_OTPs"
 
 # === MONITOR CONFIG ===
 POLL_INTERVAL = 10        # Seconds between SMS checks
