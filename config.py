@@ -1,9 +1,9 @@
 #database
 DATABASE_URL = "postgresql://postgres:iErnVcyOoiYZqUQUQeAdSnIBfqdxynEQ@trolley.proxy.rlwy.net:35794/railway"
 # === SMS PANEL CONFIG ===
-PANEL_BASE_URL = "http://51.210.208.26"
-PANEL_USERNAME = "NewGem"
-PANEL_PASSWORD = "NewGem"
+PANEL_BASE_URL = "http://94.23.120.156"
+PANEL_USERNAME = "Iraq827"
+PANEL_PASSWORD = "Iraq827"
 
 # === TELEGRAM BOT CONFIG ===
 BOT_TOKEN = "8359727140:AAGA0EedeSyqU0IgYhOpPf0uPuORulu18mY"
