@@ -25,7 +25,6 @@ def solve_captcha(html):
     soup = BeautifulSoup(html, 'html.parser')
     text = soup.get_text()
     
-    # Find math expression like "12 + 6" or "8 * 3" or "15-7"
     match = re.search(r'(\d+)\s*([+\-*/])\s*(\d+)', text)
     if match:
         a, op, b = int(match.group(1)), match.group(2), int(match.group(3))
@@ -34,7 +33,6 @@ def solve_captcha(html):
         elif op == '*': return str(a * b)
         elif op == '/': return str(a // b) if b != 0 else "1"
     
-    # Try to find any number near words like "captcha", "verify", "math"
     number_match = re.search(r'(\d{1,3})\s*[+\-*/]\s*(\d{1,3})', text)
     if number_match:
         a, b = int(number_match.group(1)), int(number_match.group(2))
@@ -46,29 +44,26 @@ def solve_captcha(html):
             elif op == '*': return str(a * b)
             elif op == '/': return str(a // b) if b != 0 else "1"
     
-    return "18"  # fallback
+    return "18"
 
 def login():
     try:
-        # Step 1: GET login page
         r1 = session.get(f"{PANEL_BASE_URL}/ints/login", timeout=15)
         captcha = solve_captcha(r1.text)
         
-        # Step 2: POST login
         r2 = session.post(f"{PANEL_BASE_URL}/ints/signin", data={
             "username": PANEL_USERNAME,
             "password": PANEL_PASSWORD,
             "capt": captcha
         }, allow_redirects=True, timeout=15)
         
-        # Step 3: Check success
         if "login" in r2.text.lower() and "logout" not in r2.text.lower():
             print(f"[MONITOR] ❌ Login failed (captcha answer was: {captcha})")
             return False
         
-        # Step 4: Visit dashboard pages
-        session.get(f"{PANEL_BASE_URL}/ints/agent/SMSDashboard", timeout=10)
-        session.get(f"{PANEL_BASE_URL}/ints/agent/SMSCDRStats", timeout=10)
+        # Client Panel Paths
+        session.get(f"{PANEL_BASE_URL}/ints/client/SMSDashboard", timeout=10)
+        session.get(f"{PANEL_BASE_URL}/ints/client/SMSCDRStats", timeout=10)
         
         print("[MONITOR] ✅ Login successful")
         return True
@@ -83,12 +78,9 @@ def fetch_sms():
         params = {
             "fdate1": now.strftime("%Y-%m-%d 00:00:00"),
             "fdate2": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "frange": "",
-            "fclient": "",
-            "fnum": "",
             "fg": "0",
             "sEcho": "1",
-            "iColumns": "9",
+            "iColumns": "7",
             "iDisplayStart": "0",
             "iDisplayLength": "50",
             "iSortCol_0": "0",
@@ -99,11 +91,11 @@ def fetch_sms():
         headers = session.headers.copy()
         headers.update({
             "X-Requested-With": "XMLHttpRequest",
-            "Referer": f"{PANEL_BASE_URL}/ints/agent/SMSCDRStats"
+            "Referer": f"{PANEL_BASE_URL}/ints/client/SMSCDRStats"
         })
         
         r = session.get(
-            f"{PANEL_BASE_URL}/ints/agent/res/data_smscdr.php",
+            f"{PANEL_BASE_URL}/ints/client/res/data_smscdr.php",
             params=params,
             headers=headers,
             timeout=15
@@ -121,18 +113,15 @@ def extract_otp(msg):
         return None
     msg = str(msg).lower()
     
-    # Pattern 1: "Code: 767558", "OTP 123456", "PIN: 987654", "codigo 123456"
-    match = re.search(r'(?:code|otp|pin|security|codigo|código|contraseña|password|verify|verification|كود|رمز)\s*[:.]?\s*(\d{4,8})', msg, re.IGNORECASE)
+    match = re.search(r'(?:code|otp|pin|codigo|código|contraseña|password|verify|verification|كود|رمز)\s*[:.]?\s*(\d{4,8})', msg, re.IGNORECASE)
     if match:
         return match.group(1)
     
-    # Pattern 2: WhatsApp style "XXX-XXX"
     match = re.search(r'\b(\d{3}[-]\d{3})\b', msg)
     if match:
         return match.group(1).replace('-', '')
     
-    # Pattern 3: Any standalone 4-6 digit number in OTP context
-    if any(kw in msg for kw in ['code', 'otp', 'pin', 'security', 'verify', 'login', 'confirm']):
+    if any(kw in msg for kw in ['code', 'otp', 'pin', 'verify', 'login', 'confirm']):
         match = re.search(r'\b(\d{4,6})\b', msg)
         if match:
             return match.group(1)
@@ -153,13 +142,10 @@ def detect_service(sender, msg):
 
 def get_country_info(number):
     number = str(number).strip().lstrip('+')
-    
-    # Try matching longest prefix first
     sorted_codes = sorted(COUNTRY_DATA.keys(), key=lambda x: len(x), reverse=True)
     for code in sorted_codes:
         if number.startswith(code):
             return COUNTRY_DATA[code]
-    
     return ("Unknown", "🌐")
 
 def monitor_loop():
@@ -167,7 +153,6 @@ def monitor_loop():
     
     print("[MONITOR] Starting SMS monitor...")
     
-    # Initial login
     if not login():
         print("[MONITOR] Initial login failed. Retrying in 30s...")
         time.sleep(30)
@@ -175,7 +160,6 @@ def monitor_loop():
             print("[MONITOR] Failed to login. Exiting monitor.")
             return
     
-    # Seed existing messages
     print("[MONITOR] Seeding existing messages...")
     rows = fetch_sms()
     for row in rows:
@@ -191,7 +175,6 @@ def monitor_loop():
         try:
             check += 1
             
-            # Refresh session periodically
             if time.time() - last_login > SESSION_REFRESH:
                 print("[MONITOR] Refreshing session...")
                 login()
@@ -203,7 +186,6 @@ def monitor_loop():
                 if not row or len(row) < 6:
                     continue
                 
-                # Skip summary rows (where message is "0" and number is "0")
                 if str(row[5]) == "0" and str(row[2]) == "0":
                     continue
                 
@@ -213,7 +195,6 @@ def monitor_loop():
                 
                 last_seen.add(uid)
                 
-                # Trim last_seen if too large
                 if len(last_seen) > MAX_LAST_SEEN:
                     last_seen = set(list(last_seen)[-MAX_LAST_SEEN//2:])
                 
@@ -225,30 +206,23 @@ def monitor_loop():
                 otp = extract_otp(msg)
                 
                 if otp and number:
-                    # Check if already processed
                     if is_otp_processed(number, otp):
                         continue
                     
-                    # Check if this number is assigned to a user
                     user = get_user_by_number(number)
                     
                     if user:
                         country_name, flag = get_country_info(number)
                         service = user.get('service', detect_service(sender, msg))
                         
-                        # Build notification
+                        # NEW OTP STYLE
                         message = (
-                            f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                            f"<b>🔔 NEW OTP RECEIVED!</b>\n\n"
-                            f"🌍 <b>COUNTRY:</b> {flag} {country_name}\n"
-                            f"📱 <b>NUMBER:</b> +{number}\n"
-                            f"🛠 <b>SERVICE:</b> {service}\n"
-                            f"🔑 <b>CODE:</b> <code>{otp}</code>\n"
-                            f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                            f"<i>📩 {sender} | 🕐 {ts}</i>"
+                            f"🗺️ Country: {flag} {country_name}\n"
+                            f"📱 Platform: {service}\n"
+                            f"☎️ Number: +{number}\n"
+                            f"🛡️ OTP Code: {otp} ✅\n"
                         )
                         
-                        # Send to user
                         if bot_instance:
                             try:
                                 bot_instance.send_message(user['user_id'], message, parse_mode="HTML")
@@ -256,17 +230,14 @@ def monitor_loop():
                             except Exception as e:
                                 print(f"[MONITOR] ❌ Failed to send to user: {e}")
                         
-                        # Send to log group
                         if bot_instance and OTP_LOG_GROUP_ID:
                             try:
                                 bot_instance.send_message(OTP_LOG_GROUP_ID, message, parse_mode="HTML")
                             except Exception as e:
                                 print(f"[MONITOR] ❌ Failed to send to log group: {e}")
                         
-                        # Save to database
                         save_otp_log(user['user_id'], number, service, otp, sender, msg)
             
-            # Status dot every 10 checks
             if check % 10 == 0:
                 print(f"[MONITOR] ✓ Running... (checked {check} times, {len(last_seen)} cached)")
             
