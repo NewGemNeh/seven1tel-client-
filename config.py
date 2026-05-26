@@ -1,5 +1,5 @@
 #database
-DATABASE_URL = "postgresql://postgres:fqnmEuzQJCUubWWfywlMkmgxaDSdKQHS@kodama.proxy.rlwy.net:37559/railway"
+DATABASE_URL = "postgresql://postgres:zLeBpeSXLSPLxqXwTbeezREpDNBSZBEy@zephyr.proxy.rlwy.net:57730/railway"
 # === SMS PANEL CONFIG ===
 PANEL_BASE_URL = "http://94.23.120.156"
 PANEL_USERNAME = "Iraq827"
