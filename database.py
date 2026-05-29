@@ -188,9 +188,9 @@ def assign_number_to_user(user_id, number, country_code, service):
     """, (user_id,))
     count = c.fetchone()['count']
 
-    if count >= 5:
+    if count >= 3:
         conn.close()
-        return False, "Maximum 5 numbers allowed"
+        return False, "Maximum 3 numbers allowed"
 
     # Check if number previously belonged to this user (released)
     c.execute("""
