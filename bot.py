@@ -111,8 +111,8 @@ def cnt_sel(call):
         return
 
     all_nums = json.loads(row['numbers'])
-    selected_nums = all_nums[:3]  # Changed from 5 to 3
-    remaining = all_nums[3:]      # Changed from 5 to 3
+    selected_nums = all_nums[:3]
+    remaining = all_nums[3:]
 
     c.execute("UPDATE combos SET numbers=%s WHERE country_code=%s AND service=%s", (json.dumps(remaining), code, srv))
     conn.commit()
@@ -148,9 +148,9 @@ def cnt_sel(call):
         types.InlineKeyboardButton("🔑 Get OTP ↗", url=OTP_GROUP_LINK, style="success")
     )
 
-    # === CLEAN MESSAGE (Removed OTP forwarding line) ===
+    # === SAƁON DA AKA GYARA ===
     bot.edit_message_text(
-        f"{flag} <b>{name} Numbers Assigned!</b>\n\n"
+        f"{flag} <b>{name} Numbers!</b>\n"
         f"⏳ <i>Waiting for OTP...</i>",
         call.message.chat.id,
         call.message.message_id,
