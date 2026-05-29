@@ -111,8 +111,8 @@ def cnt_sel(call):
         return
 
     all_nums = json.loads(row['numbers'])
-    selected_nums = all_nums[:5]
-    remaining = all_nums[5:]
+    selected_nums = all_nums[:3]  # Changed from 5 to 3
+    remaining = all_nums[3:]      # Changed from 5 to 3
 
     c.execute("UPDATE combos SET numbers=%s WHERE country_code=%s AND service=%s", (json.dumps(remaining), code, srv))
     conn.commit()
