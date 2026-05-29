@@ -148,11 +148,10 @@ def cnt_sel(call):
         types.InlineKeyboardButton("🔑 Get OTP ↗", url=OTP_GROUP_LINK, style="success")
     )
 
-    # === CLEAN MESSAGE (Exactly as requested) ===
+    # === CLEAN MESSAGE (Removed OTP forwarding line) ===
     bot.edit_message_text(
         f"{flag} <b>{name} Numbers Assigned!</b>\n\n"
-        f"⏳ <i>Waiting for OTP...</i>\n"
-        f"<i>All OTPs will be forwarded to you automatically.</i>",
+        f"⏳ <i>Waiting for OTP...</i>",
         call.message.chat.id,
         call.message.message_id,
         reply_markup=m,
